@@ -6,10 +6,15 @@ import { UserRepository } from './entities/user.repository'
 import { ParticipantRepository } from 'src/participant/entities/participant.repository';
 import { JwtModule } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'
+import { RoleRepository } from 'src/roles/role.repository';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   controllers: [AdminController],
-  providers: [AdminService],
+  providers: [
+    AdminService,
+    JwtStrategy
+  ],
   imports: [
     PassportModule.register({
       defaultStrategy: 'jwt'
@@ -20,7 +25,11 @@ import { PassportModule } from '@nestjs/passport'
         expiresIn: 3600
       }
     }),
-    TypeOrmModule.forFeature([UserRepository, ParticipantRepository])
+    TypeOrmModule.forFeature([UserRepository, ParticipantRepository, RoleRepository])
+  ],
+  exports: [
+    JwtStrategy,
+    PassportModule
   ]
 })
 export class AdminModule {}
