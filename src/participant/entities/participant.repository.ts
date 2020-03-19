@@ -3,7 +3,7 @@ import { Participant } from "./participant.entity";
 import { ParticipantDto } from "../dto/participant.dto";
 import * as bcrypt from 'bcryptjs'
 import { ParticipantSearchFilterDto } from "src/admin/dto/participant-search-filter.dto";
-import { NotFoundException } from "@nestjs/common";
+import { NotFoundException, BadRequestException, ConflictException, InternalServerErrorException } from "@nestjs/common";
 
 @EntityRepository(Participant)
 export class ParticipantRepository extends Repository<Participant> {
@@ -12,20 +12,45 @@ export class ParticipantRepository extends Repository<Participant> {
             object[key] = participantDto[key]
         }
     }
+
+    private checkValues(participantDto: ParticipantDto) {
+        const availableStatuses = ['new', 'approved', 'declined']
+        const availableRoles = ['listener', 'speaker']
+
+        if (!availableRoles.find(el => el === participantDto.role)) {
+            throw new BadRequestException('Invalid role value')
+        }
+
+        if (participantDto.status) {
+            if (!availableStatuses.find(el => el === participantDto.status)) {
+                throw new BadRequestException('Invalid status value')
+            }
+        }
+    }
     
     async createOne(participantDto: ParticipantDto): Promise<Participant> {
+        this.checkValues(participantDto)
         const participant = new Participant()
         
         this.fillObject(participant, participantDto)
         participant.status = 'new'
         participant.accountStatus = 'not_active'
 
-        await participant.save()
+        try {
+            await participant.save()
+        } catch (e) {
+            if (e.code === '23505') {
+                throw new ConflictException('Email already in use')
+            } else {
+                throw new InternalServerErrorException()
+            }
+        }
 
         return participant
     }
 
     async updateOne(id:number, participantDto: ParticipantDto): Promise<Participant> {
+        this.checkValues(participantDto)
         const participant = await this.findOne({ id })
 
         if (!participant) {
@@ -33,7 +58,15 @@ export class ParticipantRepository extends Repository<Participant> {
         }
 
         this.fillObject(participant, participantDto)
-        await participant.save()
+        try {
+            await participant.save()
+        } catch (e) {
+            if (e.code === '23505') {
+                throw new ConflictException('Email already in use')
+            } else {
+                throw new InternalServerErrorException()
+            }
+        }
 
         return participant
     }
