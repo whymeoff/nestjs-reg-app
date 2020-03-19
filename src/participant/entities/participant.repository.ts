@@ -73,6 +73,7 @@ export class ParticipantRepository extends Repository<Participant> {
 
     async findMany(participantSearchFilterDto: ParticipantSearchFilterDto): Promise<Participant[]> {
         const query = this.createQueryBuilder('participant')
+            .innerJoinAndSelect('participant.country', 'country')
         const { sort, skip, status, search } = participantSearchFilterDto
 
         if (sort) {
