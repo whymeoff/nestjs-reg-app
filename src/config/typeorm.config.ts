@@ -3,6 +3,7 @@ import { User } from 'src/admin/entities/user.entity'
 import { Participant } from 'src/participant/entities/participant.entity'
 import { Role } from 'src/roles/role.entity'
 import { Privelege } from 'src/roles/privelege.entity'
+import { Country } from 'src/countries/country.entity'
 
 export const typeOrmConfig: TypeOrmModuleOptions = {
     type: 'postgres',
@@ -11,7 +12,7 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
     username: 'postgres',
     password: 'postgres',
     database: 'regapp',
-    entities: [User, Participant, Role, Privelege],
+    entities: [User, Participant, Role, Privelege, Country],
     migrations: ["../migration/**/*.ts"],
     cli: {
         migrationsDir: "../migration"

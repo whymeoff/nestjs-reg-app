@@ -1,4 +1,5 @@
-import { Entity, BaseEntity, PrimaryGeneratedColumn, Column, Unique } from "typeorm";
+import { Entity, BaseEntity, PrimaryGeneratedColumn, Column, Unique, OneToOne, JoinColumn, OneToMany, ManyToOne } from "typeorm";
+import { Country } from "src/countries/country.entity";
 
 @Entity()
 @Unique(['email'])
@@ -33,8 +34,9 @@ export class Participant extends BaseEntity {
     @Column()
     sex: string
 
-    @Column()
-    country: number
+    @ManyToOne(type => Country, { eager: true })
+    @JoinColumn()
+    country: Country
 
     @Column()
     status: string
